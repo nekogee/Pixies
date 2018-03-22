@@ -1,11 +1,18 @@
 package com.nekogee.pixies;
 
+import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.nfc.Tag;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -17,13 +24,15 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
     private List<Photo> mPhotoList;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        CardView cardView;
         ImageView photoImage;
         TextView photoName;
 
         public ViewHolder(View view) {
             super(view);
-            photoImage = (ImageView) view.findViewById(R.id.photo_image);
-            photoName = (TextView) view.findViewById(R.id.photo_name);
+            cardView = (CardView) view;
+            photoImage = view.findViewById(R.id.photo_image);
+            photoName = view.findViewById(R.id.photo_name);
         }
     }
 
@@ -41,8 +50,19 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder,int position) {
         Photo photo = mPhotoList.get(position);
-        holder.photoImage.setImageResource(photo.getImageId());
         holder.photoName.setText(photo.getName());
+       // Log.d("打扫",photo.getImagePath());
+        if(photo.getImagePath() == null) {
+            holder.photoImage.setImageResource(photo.getImageId());
+
+        } else  {
+            holder.photoImage.setImageBitmap(BitmapFactory.decodeFile(photo.getImagePath()));
+        }
+        //
+       // holder.photoImage=photo.getImageId();
+        //使用glide加载图片
+       // Glide.with(context).load(list.get(position).getPic()).into(iViewHolder.adapterImageview);
+
     }
     @Override
     public int getItemCount() {
