@@ -32,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+
         initPhotos();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -94,6 +96,17 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         PhotoAdapter adapter = new PhotoAdapter(photoList);
         recyclerView.setAdapter(adapter);
+
+        /*HashMap<String, Integer> stringIntegerHashMap = new HashMap<>();
+        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.TOP_DECORATION,50);//top间距
+
+        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.BOTTOM_DECORATION,50);//底部间距
+
+        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.LEFT_DECORATION,50);//左间距
+
+        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.RIGHT_DECORATION,100);//右间距
+
+        recyclerView.addItemDecoration(new RecyclerViewSpacesItemDecoration(stringIntegerHashMap));*/
     }
 
        /* public boolean onCreateOptionsMenu(Menu menu) {

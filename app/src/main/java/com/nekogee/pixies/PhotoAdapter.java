@@ -22,6 +22,7 @@ import java.util.List;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> {
     private List<Photo> mPhotoList;
+    private Context mContext;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
@@ -42,7 +43,10 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item,parent, false);
+        if(mContext == null) {
+            mContext = parent.getContext();
+        }
+        View view = LayoutInflater.from(mContext).inflate(R.layout.photo_item,parent, false);
         ViewHolder holder = new ViewHolder(view);
         return holder;
     }
@@ -52,15 +56,16 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
         Photo photo = mPhotoList.get(position);
         holder.photoName.setText(photo.getName());
         if(photo.getImagePath() == null) {
-            holder.photoImage.setImageResource(photo.getImageId());
-
+            Glide.with(mContext).load(photo.getImageId()).into(holder.photoImage);
+           // holder.photoImage.setImageResource(photo.getImageId());
         } else  {
-            holder.photoImage.setImageBitmap(BitmapFactory.decodeFile(photo.getImagePath()));
+            Glide.with(mContext).load(photo.getImagePath()).into(holder.photoImage);
+           // holder.photoImage.setImageBitmap(BitmapFactory.decodeFile(photo.getImagePath()));
         }
         //
        // holder.photoImage=photo.getImageId();
         //使用glide加载图片
-       // Glide.with(context).load(list.get(position).getPic()).into(iViewHolder.adapterImageview);
+
 
     }
     @Override
