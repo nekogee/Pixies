@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("打扫", "onCreate: ");
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -184,17 +183,10 @@ public class MainActivity extends AppCompatActivity {
         }
         return path;
     }
-    //ImageView picture = findViewById(R.drawable.pic2);
 
     private void displayImage(String imagePath) {
         if (imagePath != null) {
-           /* Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-            picture.setImageBitmap(bitmap);
-            picture.getDrawable()*/
-
             Photo pic_new = new Photo("new pic",imagePath);
-            //Photo pic_new = new Photo;
-
             photoList.add(pic_new);
         } else {
             Toast.makeText(this, "failed to get image", Toast.LENGTH_SHORT).show();
@@ -221,7 +213,5 @@ public class MainActivity extends AppCompatActivity {
             Photo pic7 = new Photo("大海呀大海",R.drawable.pic1);
             photoList.add(pic7);
         }
-        Log.d("打扫结束", "initPhotos: ");
-        System.out.println("打扫 结束");
     }
 }

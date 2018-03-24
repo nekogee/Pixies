@@ -51,7 +51,6 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder,int position) {
         Photo photo = mPhotoList.get(position);
         holder.photoName.setText(photo.getName());
-       // Log.d("打扫",photo.getImagePath());
         if(photo.getImagePath() == null) {
             holder.photoImage.setImageResource(photo.getImageId());
 
