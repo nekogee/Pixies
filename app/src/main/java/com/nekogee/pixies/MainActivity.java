@@ -18,6 +18,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -36,16 +37,52 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
     private List<Photo> photoList = new ArrayList<>();
     private DrawerLayout mDrawerLayout;
-
+    private SwipeRefreshLayout swipeRefresh;
+    PhotoAdapter adapter = new PhotoAdapter(photoList);
     public static final int UPLOAD = 1;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+       // new SwipeRefreshLayout
+        SwipeRefreshLayout.OnRefreshListener listener = new SwipeRefreshLayout.OnRefreshListener(){
+            public void onRefresh(){
+                //TODO
+                swipeRefreshPhotos();
+            }
+        };
+        swipeRefresh.setOnRefreshListener(listener);
+        /*
+        swipeRefresh.post(new Runnable() {
+            @Override
+            public void run() {
+                //可删除
+                swipeRefresh.setRefreshing(true);
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                swipeRefresh.setRefreshing(false);
+            }
+        });*/
+        swipeRefresh.post(new Runnable(){
+            @Override
+            public void run() {
+                swipeRefresh.setRefreshing(true);
+            }
+        });
+        listener.onRefresh();
 
         mDrawerLayout = findViewById(R.id.myDrawer);
         NavigationView navView = findViewById(R.id.nav_view);
@@ -94,25 +131,52 @@ public class MainActivity extends AppCompatActivity {
         //final LinearLayoutManager lLayoutManager = new LinearLayoutManager(this);
         final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
-        PhotoAdapter adapter = new PhotoAdapter(photoList);
+
         recyclerView.setAdapter(adapter);
 
-        /*HashMap<String, Integer> stringIntegerHashMap = new HashMap<>();
-        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.TOP_DECORATION,50);//top间距
-
-        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.BOTTOM_DECORATION,50);//底部间距
-
-        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.LEFT_DECORATION,50);//左间距
-
-        stringIntegerHashMap.put(RecyclerViewSpacesItemDecoration.RIGHT_DECORATION,100);//右间距
-
-        recyclerView.addItemDecoration(new RecyclerViewSpacesItemDecoration(stringIntegerHashMap));*/
     }
 
        /* public boolean onCreateOptionsMenu(Menu menu) {
             getMenuInflater().inflate(R.menu.toolbar, menu);
             return true;
         }*/
+
+    private void swipeRefreshPhotos() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        initPhotos();
+                        adapter.notifyDataSetChanged();
+                        swipeRefresh.setRefreshing(false);
+                    }
+                });
+            }
+        }).start();
+    }
+/*
+    private void refreshPhotos() {
+        swipeRefresh.post(new Runnable() {
+            @Override
+            public void run() {
+                //可删除
+                swipeRefresh.setRefreshing(true);
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                swipeRefresh.setRefreshing(false);
+            }
+        });
+    }*/
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
@@ -201,6 +265,8 @@ public class MainActivity extends AppCompatActivity {
         if (imagePath != null) {
             Photo pic_new = new Photo("new pic",imagePath);
             photoList.add(pic_new);
+           // refreshPhotos();
+            mDrawerLayout.closeDrawers();
         } else {
             Toast.makeText(this, "failed to get image", Toast.LENGTH_SHORT).show();
         }
