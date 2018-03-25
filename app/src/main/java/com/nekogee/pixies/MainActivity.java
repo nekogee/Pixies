@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 swipeRefresh.setRefreshing(false);
             }
         });*/
+        //首页自动刷新
         swipeRefresh.post(new Runnable(){
             @Override
             public void run() {
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        initPhotos();
+                        //initPhotos();
                         adapter.notifyDataSetChanged();
                         swipeRefresh.setRefreshing(false);
                     }
@@ -264,8 +265,13 @@ public class MainActivity extends AppCompatActivity {
     private void displayImage(String imagePath) {
         if (imagePath != null) {
             Photo pic_new = new Photo("new pic",imagePath);
-            photoList.add(pic_new);
+            //在顶部刷新
+            photoList.add(0,pic_new);
+            //photoList.add(pic_new);
+            adapter.notifyDataSetChanged();
+           // swipeRefresh.setRefreshing(false);
            // refreshPhotos();
+            //swipeRefreshPhotos();
             mDrawerLayout.closeDrawers();
         } else {
             Toast.makeText(this, "failed to get image", Toast.LENGTH_SHORT).show();
