@@ -32,6 +32,11 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Photo> photoList = new ArrayList<>();
     private DrawerLayout mDrawerLayout;
     private SwipeRefreshLayout swipeRefresh;
+
     PhotoAdapter adapter = new PhotoAdapter(photoList);
     public static final int UPLOAD = 1;
 
@@ -245,7 +251,8 @@ public class MainActivity extends AppCompatActivity {
             // 如果是file类型的Uri，直接获取图片路径即可
             imagePath = uri.getPath();
         }
-        displayImage(imagePath); // 根据图片路径显示图片
+        displayImage(imagePath);// 根据图片路径显示图片
+        uploadImage(imagePath);
     }
 
 
@@ -278,6 +285,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void uploadImage(String imagePath) {
+            //Thread??
+        if (imagePath != null) {
+            File file = new File(imagePath);
+            try {
+                URL url = new URL("https://sm.ms/api/upload");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                connection.setRequestMethod("POST");
+               //okhttp
+                //retrofit
+            } catch (Exception e) {
+                e.printStackTrace();
+            }//?catch
+        } else {
+            Toast.makeText(this, "failed to upload image", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     private void initPhotos() {
         Log.d("打扫", "initPhotos: 打扫");
