@@ -19,6 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".EditTextActivity"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"

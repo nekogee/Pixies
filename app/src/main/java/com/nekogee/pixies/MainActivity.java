@@ -10,11 +10,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -30,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -46,9 +52,16 @@ public class MainActivity extends AppCompatActivity {
     private List<Photo> photoList = new ArrayList<>();
     private DrawerLayout mDrawerLayout;
     private SwipeRefreshLayout swipeRefresh;
+    private String returnedData = "00";
+    private Photo pic_new;
+    private String imagePath ;
+    private int count = 0;
+
 
     PhotoAdapter adapter = new PhotoAdapter(photoList);
     public static final int UPLOAD = 1;
+    public static final int EDIT_TEXT = 2;
+    public static final int UPDATE_PIC = 3;
 
 
 
@@ -60,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
-       // new SwipeRefreshLayout
+        // new SwipeRefreshLayout
         SwipeRefreshLayout.OnRefreshListener listener = new SwipeRefreshLayout.OnRefreshListener(){
             public void onRefresh(){
                 //TODO
@@ -68,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         swipeRefresh.setOnRefreshListener(listener);
+
         /*
         swipeRefresh.post(new Runnable() {
             @Override
@@ -99,14 +113,14 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //toolbar.setTitle("Title");
+        // toolbar.setTitle("Title");
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
         }
 
-       // navView.setCheckedItem(R.id.upload);//?
+        // navView.setCheckedItem(R.id.upload);//?
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -116,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                         {
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                         } else {
+                            System.out.println("open");
                             openAlbum();
                         }
                     }
@@ -127,10 +142,9 @@ public class MainActivity extends AppCompatActivity {
                     default:
                 }
                 return true;
+
             }
         });
-
-
 
         initPhotos();
 
@@ -168,38 +182,24 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
     }
-/*
-    private void refreshPhotos() {
-        swipeRefresh.post(new Runnable() {
-            @Override
-            public void run() {
-                //可删除
-                swipeRefresh.setRefreshing(true);
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                swipeRefresh.setRefreshing(false);
-            }
-        });
-    }*/
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            switch (item.getItemId()) {
-                case android.R.id.home:
-                    mDrawerLayout.openDrawer(GravityCompat.START);
-                break;
-            default:
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home: {
+                mDrawerLayout.openDrawer(GravityCompat.START);
             }
-            return true;
+
+            break;
+            default:
         }
+        return true;
+    }
 
     private void openAlbum() {
-            Intent intent = new Intent("android.intent.action.GET_CONTENT");
-            intent.setType("image/*");
-            startActivityForResult(intent, UPLOAD);
+        Intent intent = new Intent("android.intent.action.GET_CONTENT");
+        intent.setType("image/*");
+        startActivityForResult(intent, UPLOAD);
     }
 
     @Override
@@ -221,16 +221,22 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case UPLOAD:
                 if (resultCode == RESULT_OK) {
-                        // 4.4及以上系统使用这个方法处理图片
-                        handleImageOnKitKat(data);
+                    // 4.4及以上系统使用这个方法处理图片
+                    handleImageOnKitKat(data);
                 }
                 break;
+            case EDIT_TEXT:
+                if(resultCode == RESULT_OK) {
+                    String editText = data.getStringExtra("EditText");
+                    pic_new = new Photo(editText,imagePath);
+                    photoList.add(0,pic_new);
+                    adapter.notifyDataSetChanged();
+                }
             default:
         }
     }
 
     private void handleImageOnKitKat(Intent data) {
-        String imagePath = null;
         Uri uri = data.getData();
         Log.d("TAG", "handleImageOnKitKat: uri is " + uri);
         if (DocumentsContract.isDocumentUri(this, uri)) {
@@ -252,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
             imagePath = uri.getPath();
         }
         displayImage(imagePath);// 根据图片路径显示图片
-        uploadImage(imagePath);
+        // uploadImage(imagePath);
     }
 
 
@@ -269,22 +275,20 @@ public class MainActivity extends AppCompatActivity {
         return path;
     }
 
+    private void getEditText() {
+        Intent intent = new Intent(MainActivity.this,EditTextActivity.class);
+        startActivityForResult(intent,EDIT_TEXT);
+    }
     private void displayImage(String imagePath) {
         if (imagePath != null) {
-            Photo pic_new = new Photo("new pic",imagePath);
-            //在顶部刷新
-            photoList.add(0,pic_new);
-            //photoList.add(pic_new);
-            adapter.notifyDataSetChanged();
-           // swipeRefresh.setRefreshing(false);
-           // refreshPhotos();
-            //swipeRefreshPhotos();
+           getEditText();
             mDrawerLayout.closeDrawers();
         } else {
             Toast.makeText(this, "failed to get image", Toast.LENGTH_SHORT).show();
         }
     }
 
+/*
     private void uploadImage(String imagePath) {
             //Thread??
         if (imagePath != null) {
@@ -302,11 +306,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "failed to upload image", Toast.LENGTH_SHORT).show();
         }
-    }
+    }*/
 
     private void initPhotos() {
-        Log.d("打扫", "initPhotos: 打扫");
-        System.out.println("打扫 初始化");
         for (int i = 0; i < 2; i++) {
             Photo pic1 = new Photo("海底游鱼乐，天边过雁愁。浮天沧海远，去世法舟轻。", R.drawable.pic6);
             photoList.add(pic1);
