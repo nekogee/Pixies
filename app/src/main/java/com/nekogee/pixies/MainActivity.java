@@ -47,6 +47,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import okhttp3.FormBody;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class MainActivity extends AppCompatActivity {
 
     private List<Photo> photoList = new ArrayList<>();
@@ -55,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private String returnedData = "00";
     private Photo pic_new;
     private String imagePath ;
-    private int count = 0;
+    private File file;
 
 
     PhotoAdapter adapter = new PhotoAdapter(photoList);
@@ -258,7 +267,8 @@ public class MainActivity extends AppCompatActivity {
             imagePath = uri.getPath();
         }
         displayImage(imagePath);// 根据图片路径显示图片
-        // uploadImage(imagePath);
+        Log.d("neww", "b4 upload");
+        uploadImage(imagePath);
     }
 
 
@@ -288,25 +298,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-/*
-    private void uploadImage(String imagePath) {
-            //Thread??
-        if (imagePath != null) {
-            File file = new File(imagePath);
-            try {
-                URL url = new URL("https://sm.ms/api/upload");
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-                connection.setRequestMethod("POST");
-               //okhttp
-                //retrofit
-            } catch (Exception e) {
-                e.printStackTrace();
-            }//?catch
-        } else {
-            Toast.makeText(this, "failed to upload image", Toast.LENGTH_SHORT).show();
-        }
-    }*/
+    private void uploadImage(final String imagePath) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Log.d("neww", "run: in");
+                    OkHttpClient client = new OkHttpClient();
+
+                    File file = new File(imagePath);
+
+                    MultipartBody.Builder requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM);
+
+                    RequestBody body = RequestBody.create(MediaType.parse("image/*"), file);
+                    String filename = file.getName();
+                 
+                    requestBody.addFormDataPart("smfile", filename, body);
+
+                    Request request = new Request.Builder()
+                            .url("https://sm.ms/api/upload")
+                            .removeHeader("User-Agent")
+                            .addHeader("User-Agent","Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:0.9.4)")
+                            .post(requestBody.build())
+                            .build();
+                    client.newBuilder().build().newCall(request).execute();
+
+                    Log.d("neww", "run: after post");
+                    String msg = request.toString();
+                    Log.d("neww", msg);
+                    Response response = client.newCall(request).execute();
+                    Log.d("neww", "run: aa");
+                    String responseData = response.body().string();
+                    Log.d("neww", responseData);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+            //Toast.makeText(this, "failed to upload image", Toast.LENGTH_SHORT).show();
+    }
 
     private void initPhotos() {
         for (int i = 0; i < 2; i++) {
