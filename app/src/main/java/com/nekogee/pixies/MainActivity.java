@@ -313,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
 
                     RequestBody body = RequestBody.create(MediaType.parse("image/*"), file);
                     String filename = file.getName();
-                 
+
                     requestBody.addFormDataPart("smfile", filename, body);
 
                     Request request = new Request.Builder()
