@@ -1,7 +1,10 @@
 package com.nekogee.pixies;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -35,8 +38,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,11 +69,13 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefresh;
     private String returnedData = "00";
     private Photo pic_new;
-    private String imagePath ;
+    private String imagePath;
     private File file;
+    private PicBean picBean;
+    private String url;
 
-
-    PhotoAdapter adapter = new PhotoAdapter(photoList);
+    //PhotoAdapter adapter = new PhotoAdapter(photoList);
+    PhotoAdapter adapter;
     public static final int UPLOAD = 1;
     public static final int EDIT_TEXT = 2;
     public static final int UPDATE_PIC = 3;
@@ -158,6 +166,21 @@ public class MainActivity extends AppCompatActivity {
         initPhotos();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
+
+        adapter = new PhotoAdapter(photoList, new PhotoAdapter.onRecyclerViewItemClick() {
+            @Override
+            public void onItemClick(View v, int position) {
+                String url = photoList.get(position).getUrl();
+                if(url==null) {
+                    Toast.makeText(v.getContext(),"图片链接失效啦(/ﾟДﾟ)/ ",Toast.LENGTH_SHORT).show();
+                } else {
+                    ClipboardManager clipboardManager = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clipData = ClipData.newPlainText("url",photoList.get(position).getUrl());
+                    clipboardManager.setPrimaryClip(clipData);
+                    Toast.makeText(v.getContext(),"图片链接复制成功(●’◡’●)ﾉ",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         //final LinearLayoutManager lLayoutManager = new LinearLayoutManager(this);
         final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
@@ -237,7 +260,8 @@ public class MainActivity extends AppCompatActivity {
             case EDIT_TEXT:
                 if(resultCode == RESULT_OK) {
                     String editText = data.getStringExtra("EditText");
-                    pic_new = new Photo(editText,imagePath);
+                    //url可能会未及时更新
+                    pic_new = new Photo(editText,imagePath,url);
                     photoList.add(0,pic_new);
                     adapter.notifyDataSetChanged();
                 }
@@ -331,6 +355,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("neww", "run: aa");
                     String responseData = response.body().string();
                     Log.d("neww", responseData);
+                    parseJSON(responseData);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -338,6 +364,34 @@ public class MainActivity extends AppCompatActivity {
         }).start();
 
             //Toast.makeText(this, "failed to upload image", Toast.LENGTH_SHORT).show();
+    }
+
+    private void parseJSON(String responseData) {
+        try {
+            Log.d("neww", responseData);
+            picBean = new PicBean();
+            JSONObject jsonObject = new JSONObject(responseData);
+            String code = jsonObject.getString("code");
+            Log.d("neww", code);
+            if(code.equals("success")) {
+                JSONObject data = jsonObject.getJSONObject("data");
+                int size = data.getInt("size");
+                String storeName = data.getString("storename");
+                url = data.getString("url");
+                String delete = data.getString("delete");
+                picBean.setSize(size);
+                picBean.setStoreName(storeName);
+                picBean.setUrl(url);
+                picBean.setDelete(delete);
+                Log.d("neww", url);
+            } else {
+                String msg = jsonObject.getString("msg");
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void initPhotos() {

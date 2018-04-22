@@ -24,7 +24,8 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
     private List<Photo> mPhotoList;
     private Context mContext;
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    private onRecyclerViewItemClick mOnRvItemClick;
+   /* static class ViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
         ImageView photoImage;
         TextView photoName;
@@ -35,10 +36,11 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
             photoImage = view.findViewById(R.id.photo_image);
             photoName = view.findViewById(R.id.photo_name);
         }
-    }
+    }*/
 
-    public PhotoAdapter(List<Photo> PhotoList) {
+    public PhotoAdapter(List<Photo> PhotoList,onRecyclerViewItemClick onRvItemClick) {
         mPhotoList = PhotoList;
+        this.mOnRvItemClick = onRvItemClick;
     }
 
     @Override
@@ -65,8 +67,35 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
         //
        // holder.photoImage=photo.getImageId();
         //使用glide加载图片
+        //holder.setData(position);
+    }
 
+    public interface onRecyclerViewItemClick {
+        void onItemClick(View v, int position);
+    }
 
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        CardView cardView;
+        ImageView photoImage;
+        TextView photoName;
+
+        public ViewHolder(View view) {
+            super(view);
+            cardView = (CardView) view;
+            photoImage = view.findViewById(R.id.photo_image);
+            photoName = view.findViewById(R.id.photo_name);
+            itemView.setOnClickListener(this);
+        }
+
+        /*public void setData(int position) {
+            textView.setText("第" + position + "行");
+        }*/
+
+        @Override
+        public void onClick(View view) {
+            if (mOnRvItemClick != null)
+                mOnRvItemClick.onItemClick(view, getAdapterPosition());
+        }
     }
     @Override
     public int getItemCount() {

@@ -16,13 +16,29 @@ public class Photo {
     private String name;
     private String imagePath = null;
     private int imageId = 0;
+    private String url = null;
     public Photo(String name, String imagePath) {
         this.name = name;
         this.imagePath = imagePath;
     }
+    public Photo(String name,String imagePath,String url){
+        this.name = name;
+        this.imagePath = imagePath;
+        this.url = url;
+    }
+
     public Photo(String name,int imageId) {
         this.name = name;
         this.imageId = imageId;
+    }
+    public Photo(String name,int imageId,String url){
+        this.name = name;
+        this.imageId = imageId;
+        this.url = url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
     public String getName() {
         return name;
@@ -33,4 +49,5 @@ public class Photo {
     public int getImageId() {
         return imageId;
     }
+    public String getUrl() {return url;}
 }
